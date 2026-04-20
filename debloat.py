@@ -12,13 +12,12 @@ init(autoreset=True)
 class AhmedYounisDebloater:
     def __init__(self):
         self.developer = "Ahmed Younis"
-        self.version = "3.1.0-Elite"
+        self.version = "3.1.5-Elite"
         self.target_dir = ""
         self.deleted_count = 0
         self.failed_count = 0
-        self.lock = threading.Lock() # لضمان سلامة العدادات مع الـ Threads
+        self.lock = threading.Lock()
         
-        # قائمة تطبيقات عبود
         self.debloat_apps = [
             "SpeechServicesByGoogle", "HMT", "PaymentFramework", "SamsungCalendar", "LiveTranscribe",
             "DigitalWellbeing", "Maps", "Duo", "Photos", "FactoryCameraFB", "WlanTest", "AssistantShell",
@@ -52,7 +51,6 @@ class AhmedYounisDebloater:
         ]
 
     def banner(self):
-        # منع الخطأ إذا كان يعمل بدون Console
         if sys.stdout and sys.stdout.isatty():
             os.system('cls' if os.name == 'nt' else 'clear')
             print(f"{Fore.CYAN}{'='*60}")
@@ -104,7 +102,6 @@ class AhmedYounisDebloater:
         ]
         for p in paths:
             self.secure_delete(os.path.join(self.target_dir, p))
-        if sys.stdout and sys.stdout.isatty(): print(f"\n{Fore.GREEN}[+] eSIM files purged.")
 
     def remove_fabric_crypto(self):
         self.animate_loading("Disabling Fabric Crypto")
@@ -117,10 +114,8 @@ class AhmedYounisDebloater:
         ]
         for p in paths:
             self.secure_delete(os.path.join(self.target_dir, p))
-        if sys.stdout and sys.stdout.isatty(): print(f"\n{Fore.GREEN}[+] Fabric Crypto removed.")
 
     def start_kick(self):
-        if sys.stdout and sys.stdout.isatty(): print(f"{Fore.CYAN}[*] Multi-threaded Debloat starting...")
         app_sub_dirs = ["system/system/app", "system/system/priv-app", "product/app", "product/priv-app"]
         targets = []
         for app in self.debloat_apps:
@@ -130,7 +125,6 @@ class AhmedYounisDebloater:
             executor.map(self.secure_delete, targets)
 
     def extra_cleanup(self):
-        self.animate_loading("Final Optimization")
         extra_paths = [
             "system/system/hidden", "system/system/preload", "system/system/tts",
             "system/system/etc/mediasearch", "product/app/Gmail2/oat",
@@ -140,38 +134,31 @@ class AhmedYounisDebloater:
             self.secure_delete(os.path.join(self.target_dir, p))
 
     def run(self):
-        self.banner()
-        
-        # حل مشكلة الانهيار: التحقق من وجود Terminal أو Input
-        if len(sys.argv) > 1:
-            self.target_dir = sys.argv[1]
-        else:
-            if sys.stdin and sys.stdin.isatty():
-                try:
-                    self.target_dir = input(f"{Fore.YELLOW}Enter the firmware path: {Style.RESET_ALL}")
-                except EOFError:
-                    self.target_dir = os.getcwd()
+        try:
+            self.banner()
+            if len(sys.argv) > 1:
+                self.target_dir = sys.argv[1]
             else:
-                # إذا تم التشغيل كـ EXE صامت، نستخدم المجلد الحالي تلقائياً
-                self.target_dir = os.getcwd()
+                if sys.stdin and sys.stdin.isatty():
+                    self.target_dir = input(f"{Fore.YELLOW}Enter firmware path: ")
+                else:
+                    self.target_dir = os.getcwd()
 
-        if not os.path.exists(self.target_dir):
-            if sys.stdout and sys.stdout.isatty():
-                print(f"{Fore.RED}[!] Error: Path '{self.target_dir}' not found.")
-            return
+            if not os.path.exists(self.target_dir):
+                print(f"{Fore.RED}Path not found!")
+                time.sleep(3)
+                return
 
-        start_time = time.time()
-        self.start_kick()
-        self.remove_esim_files()
-        self.remove_fabric_crypto()
-        self.extra_cleanup()
-        duration = round(time.time() - start_time, 2)
-        
-        if sys.stdout and sys.stdout.isatty():
-            print(f"\n{Fore.CYAN}{'='*60}")
-            print(f"{Fore.GREEN}   Deleted Items : {self.deleted_count} | Time: {duration}s")
-            print(f"{Fore.MAGENTA}   Status        : Optimized by Ahmed Younis")
-            print(f"{Fore.CYAN}{'='*60}")
+            self.start_kick()
+            self.remove_esim_files()
+            self.remove_fabric_crypto()
+            self.extra_cleanup()
+            
+            print(f"\n{Fore.GREEN}Done! Deleted: {self.deleted_count}")
+            time.sleep(5)
+        except Exception as e:
+            with open("debug_log.txt", "w") as f:
+                f.write(f"Error: {str(e)}")
 
 if __name__ == "__main__":
     tool = AhmedYounisDebloater()
