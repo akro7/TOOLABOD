@@ -1,4 +1,4 @@
-name: Build Windows Tool
+name: Build QuantumDebloater Tool
 
 on:
   push:
@@ -23,23 +23,24 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install customtkinter pyinstaller
+        # تم إضافة colorama و packaging لضمان بناء سليم
+        pip install customtkinter pyinstaller colorama packaging
 
     - name: Build Executable with PyInstaller
       run: |
-        # --noconsole: عشان ميتفتحش CMD مع البرنامج
-        # --onefile: يجمع كل حاجة في ملف exe واحد
-        # --add-data: إضافة ملفات الـ ADB و Fastboot الموجودة في المجلد الأساسي
-        # تم حذف heimdall.exe لعدم وجوده في ملفات المشروع
-        pyinstaller --noconsole --onefile --name "QuantumDebloater" `
+        # --collect-all customtkinter: ضروري جداً لضمان ظهور الثيمات والألوان
+        # --uac-admin: لطلب صلاحيات المسؤول لضمان عمل ADB/Fastboot بدون مشاكل
+        # --onefile: لجمع المشروع في ملف EXE واحد سهل النقل
+        pyinstaller --noconsole --onefile --uac-admin `
+        --collect-all customtkinter `
         --add-data "adb.exe;." `
         --add-data "AdbWinApi.dll;." `
         --add-data "AdbWinUsbApi.dll;." `
         --add-data "fastboot.exe;." `
-        debloat.py
+        --name "QuantumDebloater_Pro" debloat.py
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: QuantumDebloater-Windows
-        path: dist/QuantumDebloater.exe
+        name: QuantumDebloater-Windows-Build
+        path: dist/QuantumDebloater_Pro.exe
