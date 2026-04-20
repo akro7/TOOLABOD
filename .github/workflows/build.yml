@@ -21,13 +21,12 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pyinstaller colorama packaging
+        pip install pyinstaller customtkinter packaging
 
     - name: Build Executable
       run: |
-        # تم إزالة --noconsole لضمان فتح الشاشة
-        # تم إبقاء --onefile لسهولة النقل
-        pyinstaller --onefile `
+        pyinstaller --onefile --noconsole --uac-admin `
+        --collect-all customtkinter `
         --add-data "adb.exe;." `
         --add-data "AdbWinApi.dll;." `
         --add-data "AdbWinUsbApi.dll;." `
